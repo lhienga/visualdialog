@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
+
+    <link rel="stylesheet" href="../static/global.css" />
+    <link rel="stylesheet" href="../static/index.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@400&display=swap"
+    />
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  </head>
+  <body>
+    <div class="chat">
+      <div class="image">
+        <div class="image-box">
+          <div class="image-box-head">
+            <div class="your-image">Your image</div>
+          </div>
+          <div id="imageFormeight" class="image-place">
+            <!--
+            <img src='https://cf.ltkcdn.net/kids/images/std/236793-1600x1200-titanic.jpg' alt="Flowers in Chania">
+            -->
+          </div>
+          <div class="url-place">
+            
+              <form id="urlArea" class="input-group">
+                <input type="text" id="url" name="img_url" placeholder="Place your image URL..." autocomplete="off" class="form-control type_msg" required/>
+                <button type = "submit" id = "send" class="send_btn"><i class="fas fa-location-arrow submit-arrow"></i></button>
+              </form>
+              
+     
+            
+            
+          </div>
+          
+          
+        </div>
+        
+      </div>
+
+      <div class="chat1">
+        <div class = "messages">
+          <div id="messageFormeight" class="chat-box msg_card_body">
+            
+            <div class="bot-frame">
+              <div class="bot-text">Hello! Ask me something about the image!</div>
+
+            </div>
+            <!--
+            <div class="bot-frame" data-response-id="'+ responseCounter.toString()+'"><div class="bot-text">hihi </div><div class="iconoutlinelike-parent"><button id = "like_btn'+ responseCounter.toString()+'" class="like_btn" alt=""><i class="far fa-thumbs-up like-icon" ></i></button><button id = "dislike_btn'+ responseCounter.toString()+'" class="dislike_btn" alt=""><i class="far fa-thumbs-down dislike-icon" ></i></button></div></div>
+            -->
+          </div>
+
+          <div class="chat-area">
+            <form id="messageArea" class="input-group">
+              <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control type_msg" required/>
+              <button type = "submit" id = "send1" class="send_btn"><i class="fas fa-location-arrow submit-arrow"></i></button>
+            </form>
+          </div>
+
+          <div class="chat-box-head">
+            <div class="chatbot-name">ChatBot</div> 
+            <i class="fas fa-solid fa-robot bot-logo-icon"></i>
+          </div>
+        </div>
+        <div id="floating-message" class="floating-message"></div>
+
+
+
+            
+            
+  
+          
+ <!--          
+        </div>
+        
+        
+        
+        <div class="my-text-box">
+          <div class="my-text-box-child"></div>
+          <div class="my-text">How are you?</div>
+        </div>
+        <div class="my-text-box1">
+          <div class="my-text-box-item"></div>
+          <div class="my-text1">Where are you?</div>
+        </div>
+        -->   
+        
+      </div>
+    </div>
+    <script>
+      $(document).ready(function() {
+    function handleButtonClick(button) {
+        const isLikeButton = button.hasClass('like_btn');
+        const responseContainer = button.closest('.bot-frame');
+        const feedback = isLikeButton ? 'like' : 'dislike';
+        const botFrameId = responseContainer.attr('data-response-id');
+
+        // Toggle the filled/unfilled icon
+        button.find('i').toggleClass('far fas');
+
+        // Handle the opposite button
+        if (!isLikeButton) {
+            const likeButton = button.siblings('.like_btn');
+            if (likeButton.length > 0) {
+                likeButton.find('i').removeClass('fas').addClass('far');
+            }
+        }
+        else {
+            const dislikeButton = button.siblings('.dislike_btn');
+            if (dislikeButton.find('i').hasClass('fas')) {
+                dislikeButton.find('i').toggleClass('fas far');
+            }
+        }
+
+        // Send data to the server via AJAX
+        $.ajax({
+            data: {
+                id: botFrameId,
+                feedback: feedback
+            },
+            type: "POST",
+            url: "/sendfeedback",
+        }).done(function(data) {
+            console.log('Data sent to server:', data);
+        });
+    }
+
+    // Event delegation for dynamically added like and dislike buttons
+    $("#messageFormeight").on("click", ".like_btn", function() {
+        handleButtonClick($(this));
+    });
+
+    $("#messageFormeight").on("click", ".dislike_btn", function() {
+        handleButtonClick($(this));
+    });
+});
+
+
+			$(document).ready(function() {
+        let responseCounter = 0;
+        
+        $("#urlArea").on("submit", function(event) {
+					var url = $("#url").val();
+					var userImg = '<img src='+url+' alt="Your image">'
+          // Empty the existing content in #imageFormeight
+          $("#imageFormeight").empty();
+					$("#imageFormeight").append(userImg);
+					event.preventDefault();
+        });
+
+				$("#messageArea").on("submit", function(event) {
+          var url = $("#url").val();
+					var rawText = $("#text").val();
+          sendMessage(rawText, url);
+          event.preventDefault();
+				});
+           
+				function uploadImage(imageInput){
+					$ajax({
+						data: {
+							image: imageInput
+						},
+						type: "POST", 
+						url: "/getimg"
+					}).done(function(data){
+						print(data)
+					})
+				};
+		
+				function sendMessage(rawText, url) {
+					var userHtml = '<div class="msg_container_send">'+ rawText+'</div>';
+          console.log("dhididhidhsihao");
+          responseCounter++;
+		
+					$("#text").val("");
+					$("#messageFormeight").append(userHtml);
+          var chatBox = document.getElementById("messageFormeight");
+          chatBox.scrollTop = chatBox.scrollHeight;
+
+					// Send data to the server via AJAX
+					$.ajax({
+						data: {
+              id: responseCounter,
+							msg: rawText,
+							url: url, // Pass the image data
+						},
+						type: "POST",
+						url: "/get",
+					}).done(function(data) {
+						var botHtml = '<div class="bot-frame" data-response-id="'+ responseCounter.toString()+'"><div class="bot-text">'+data+'</div><div class="iconoutlinelike-parent"><button id = "like_btn'+ responseCounter.toString()+'" class="like_btn" alt=""><i class="far fa-thumbs-up like-icon"></i></button><button id = "dislike_btn'+ responseCounter.toString()+'" class="dislike_btn" alt=""><i class="far fa-thumbs-down dislike-icon"></i></button></div></div>';
+						$("#messageFormeight").append($.parseHTML(botHtml));
+            var chatBox = document.getElementById("messageFormeight");
+            chatBox.scrollTop = chatBox.scrollHeight;
+					});
+				}
+        
+
+			});
+
+		</script>
+  </body>
+</html>
