@@ -111,6 +111,7 @@
 
       $("#urlArea").on("submit", function (event) {
         var url = $("#url").val();
+        console.log("hihi upload image");
         var userImg = '<img src=' + url + ' alt="Your image">'
         // Empty the existing content in #imageFormeight
         $("#imageFormeight").empty();
@@ -119,9 +120,12 @@
       });
 
       $("#messageArea").on("submit", function (event) {
+        console.log("hihi send message!!!!!!!!");
         var url = $("#url").val();
         var rawText = $("#text").val();
-        sendMessage(rawText, url);
+        var timestamp = Date.now();
+        console.log("time", timestamp);
+        sendMessage(rawText, url, timestamp);
         event.preventDefault();
       });
 
@@ -137,11 +141,14 @@
         })
       };
 
-      function sendMessage(rawText, url) {
+ 
+
+
+      function sendMessage(rawText, url, timestamp) {
         var userHtml = '<div class="msg_container_send">' + rawText + '</div>';
         console.log("dhididhidhsihao");
         responseCounter++;
-
+        var messageid = timestamp.toString() 
         $("#text").val("");
         $("#messageFormeight").append(userHtml);
         var chatBox = document.getElementById("messageFormeight");
@@ -150,14 +157,14 @@
         // Send data to the server via AJAX
         $.ajax({
           data: {
-            id: responseCounter,
+            id: messageid,
             msg: rawText,
             url: url, // Pass the image data
           },
           type: "POST",
           url: "/get",
         }).done(function (data) {
-          var botHtml = '<div class="bot-frame" data-response-id="' + responseCounter.toString() + '"><div class="bot-text">' + data + '</div><div class="iconoutlinelike-parent"><button id = "like_btn' + responseCounter.toString() + '" class="like_btn" alt=""><i class="far fa-thumbs-up like-icon"></i></button><button id = "dislike_btn' + responseCounter.toString() + '" class="dislike_btn" alt=""><i class="far fa-thumbs-down dislike-icon"></i></button></div></div>';
+          var botHtml = '<div class="bot-frame" data-response-id="' + messageid + '"><div class="bot-text">' + data + '</div><div class="iconoutlinelike-parent"><button id = "like_btn' + responseCounter.toString() + '" class="like_btn" alt=""><i class="far fa-thumbs-up like-icon"></i></button><button id = "dislike_btn' + responseCounter.toString() + '" class="dislike_btn" alt=""><i class="far fa-thumbs-down dislike-icon"></i></button></div></div>';
           $("#messageFormeight").append($.parseHTML(botHtml));
           var chatBox = document.getElementById("messageFormeight");
           chatBox.scrollTop = chatBox.scrollHeight;

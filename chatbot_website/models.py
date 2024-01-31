@@ -1,10 +1,12 @@
 from . import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
+from flask_sqlalchemy import SQLAlchemy
 
 
 class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    msg_timestamp = db.Column(db.String(10000))
     img_url = db.Column(db.String(10000))
     user_msg = db.Column(db.String(10000))
     bot_msg = db.Column(db.String(10000))

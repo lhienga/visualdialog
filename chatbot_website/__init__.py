@@ -4,13 +4,14 @@ from os import path
 from flask_login import LoginManager, current_user
 from PIL import Image
 import requests
-
+from sqlalchemy import update
+from sqlalchemy import schema, create_engine
 
 db = SQLAlchemy()
 DB_NAME = "database_cb.db"
 
-
 def create_app():
+    
     app = Flask(__name__)
     # app.config['UPLOAD_FOLDER'] = "static/uploads"
     app.config['SECRET_KEY'] = 'hjshjhdjah kjshkjdhjs'
@@ -61,14 +62,15 @@ def create_app():
         bot_msg = get_Chat_response(input, img)
         feedback = request.form.get('feedback')
 
-        new_chat = Chat(img_url=img_url,
+        new_chat = Chat(msg_timestamp = str(id),
+                        img_url=img_url,
                         user_msg=user_msg,
                         bot_msg=bot_msg,
                         feedback=feedback,
                         user_id=current_user.id)
         db.session.add(new_chat) #adding the chat to the database 
         db.session.commit()
-
+        
         new = {
             "id": id,
             "image_url": img_url,
@@ -118,8 +120,24 @@ def create_app():
     @app.route("/sendfeedback", methods=["GET", "POST"])
     def saveFeedback():
         # global data
-        feedback = request.form.get('feedback')
-        
+        feedback = request.form["feedback"]
+        id = request.form["id"]
+        with app.app_context():
+            update = Chat.query.filter_by(msg_timestamp = str(id), user_id = current_user.id).first()
+           
+            if update:
+                new_chat = Chat(id = update.id,
+                                msg_timestamp = str(id),
+                                img_url=update.img_url,
+                                user_msg=update.user_msg,
+                                bot_msg=update.bot_msg,
+                                feedback=feedback,
+                                date = update.date,
+                                user_id=current_user.id)
+                db.session.delete(update)
+                db.session.commit()
+                db.session.add(new_chat) #adding the chat to the database 
+                db.session.commit()
         # data.loc[int(id) - 1, 'feedback'] = feedback
         print("hiasdsaf feedback", feedback)
         return "feedback saved!"
