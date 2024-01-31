@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+{% block content%}
+<div class="chat">
+    <div class="image">
+        <div class="image-box">
+            <div class="image-box-head">
+                <div class="your-image">Your image</div>
+            </div>
+            <div id="imageFormeight" class="image-place">
+                <!--
+          <img src='https://cf.ltkcdn.net/kids/images/std/236793-1600x1200-titanic.jpg' alt="Flowers in Chania">
+          -->
+            </div>
+            <div class="url-place">
+                <form id="urlArea" class="input-group">
+                    <input type="text" id="url" name="img_url" placeholder="Place your image URL..." autocomplete="off"
+                        class="form-control type_msg" required />
+                    <button type="submit" id="send" class="send_btn">
+                        <i class="fas fa-location-arrow submit-arrow"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat1">
+        <div class="messages">
+            <div id="messageFormeight" class="chat-box msg_card_body">
+                <div class="bot-frame">
+                    <div class="bot-text">Hello! Ask me something about the image!</div>
+                </div>
+                <!--
+            <div class="bot-frame" data-response-id="'+ responseCounter.toString()+'"><div class="bot-text">hihi </div><div class="iconoutlinelike-parent"><button id = "like_btn'+ responseCounter.toString()+'" class="like_btn" alt=""><i class="far fa-thumbs-up like-icon" ></i></button><button id = "dislike_btn'+ responseCounter.toString()+'" class="dislike_btn" alt=""><i class="far fa-thumbs-down dislike-icon" ></i></button></div></div>
+            -->
+            </div>
+
+            <div class="chat-area">
+                <form id="messageArea" class="input-group">
+                    <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off"
+                        class="form-control type_msg" required />
+                    <button type="submit" id="send1" class="send_btn">
+                        <i class="fas fa-location-arrow submit-arrow"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="chat-box-head">
+                <div class="chatbot-name">ChatBot</div>
+                <i class="fas fa-solid fa-robot bot-logo-icon"></i>
+            </div>
+        </div>
+        <div id="floating-message" class="floating-message"></div>
+
+        <!--          
+      </div>
+      
+      
+      
+      <div class="my-text-box">
+        <div class="my-text-box-child"></div>
+        <div class="my-text">How are you?</div>
+      </div>
+      <div class="my-text-box1">
+        <div class="my-text-box-item"></div>
+        <div class="my-text1">Where are you?</div>
+      </div>
+      -->
+
+    </div>
+</div>
+{% endblock %}

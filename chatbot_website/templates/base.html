@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    crossorigin="anonymous" />
+  <link rel="stylesheet" href="../static/global.css" />
+  <link rel="stylesheet" href="../static/index.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400&display=swap" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+    integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <title>{% block title %}Home{% endblock %}</title>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbar">
+      <div class="navbar-nav">
+        {% if user.is_authenticated %}
+        <a class="nav-item nav-link" id="home" href="/">Home</a>
+        <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+        {% else %}
+        <a class="nav-item nav-link" id="login" href="/login">Login</a>
+        <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %} {% for category, message in messages %} {% if category ==
+  'error' %}
+  <div class="alert alert-danger alter-dismissable fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% else %}
+  <div class="alert alert-success alter-dismissable fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %} {% endfor %} {% endif %} {% endwith %}
+
+  <div class="container">{% block content %} {% endblock %}</div>
+
+  <script>
+    $(document).ready(function () {
+      function handleButtonClick(button) {
+        const isLikeButton = button.hasClass('like_btn');
+        const responseContainer = button.closest('.bot-frame');
+        const feedback = isLikeButton ? 'like' : 'dislike';
+        const botFrameId = responseContainer.attr('data-response-id');
+
+        // Toggle the filled/unfilled icon
+        button.find('i').toggleClass('far fas');
+
+        // Handle the opposite button
+        if (!isLikeButton) {
+          const likeButton = button.siblings('.like_btn');
+          if (likeButton.length > 0) {
+            likeButton.find('i').removeClass('fas').addClass('far');
+          }
+        }
+        else {
+          const dislikeButton = button.siblings('.dislike_btn');
+          if (dislikeButton.find('i').hasClass('fas')) {
+            dislikeButton.find('i').toggleClass('fas far');
+          }
+        }
+
+        // Send data to the server via AJAX
+        $.ajax({
+          data: {
+            id: botFrameId,
+            feedback: feedback
+          },
+          type: "POST",
+          url: "/sendfeedback",
+        }).done(function (data) {
+          console.log('Data sent to server:', data);
+        });
+      }
+
+      // Event delegation for dynamically added like and dislike buttons
+      $("#messageFormeight").on("click", ".like_btn", function () {
+        handleButtonClick($(this));
+      });
+
+      $("#messageFormeight").on("click", ".dislike_btn", function () {
+        handleButtonClick($(this));
+      });
+    });
+
+
+    $(document).ready(function () {
+      let responseCounter = 0;
+
+      $("#urlArea").on("submit", function (event) {
+        var url = $("#url").val();
+        var userImg = '<img src=' + url + ' alt="Your image">'
+        // Empty the existing content in #imageFormeight
+        $("#imageFormeight").empty();
+        $("#imageFormeight").append(userImg);
+        event.preventDefault();
+      });
+
+      $("#messageArea").on("submit", function (event) {
+        var url = $("#url").val();
+        var rawText = $("#text").val();
+        sendMessage(rawText, url);
+        event.preventDefault();
+      });
+
+      function uploadImage(imageInput) {
+        $ajax({
+          data: {
+            image: imageInput
+          },
+          type: "POST",
+          url: "/getimg"
+        }).done(function (data) {
+          print(data)
+        })
+      };
+
+      function sendMessage(rawText, url) {
+        var userHtml = '<div class="msg_container_send">' + rawText + '</div>';
+        console.log("dhididhidhsihao");
+        responseCounter++;
+
+        $("#text").val("");
+        $("#messageFormeight").append(userHtml);
+        var chatBox = document.getElementById("messageFormeight");
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Send data to the server via AJAX
+        $.ajax({
+          data: {
+            id: responseCounter,
+            msg: rawText,
+            url: url, // Pass the image data
+          },
+          type: "POST",
+          url: "/get",
+        }).done(function (data) {
+          var botHtml = '<div class="bot-frame" data-response-id="' + responseCounter.toString() + '"><div class="bot-text">' + data + '</div><div class="iconoutlinelike-parent"><button id = "like_btn' + responseCounter.toString() + '" class="like_btn" alt=""><i class="far fa-thumbs-up like-icon"></i></button><button id = "dislike_btn' + responseCounter.toString() + '" class="dislike_btn" alt=""><i class="far fa-thumbs-down dislike-icon"></i></button></div></div>';
+          $("#messageFormeight").append($.parseHTML(botHtml));
+          var chatBox = document.getElementById("messageFormeight");
+          chatBox.scrollTop = chatBox.scrollHeight;
+        });
+      }
+    });
+  </script>
+  <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script> -->
+
+
+
+  <!-- {% block javascript %}
+    <script type="text/javascript">
+      function deleteNote(noteId) {
+  fetch("/delete-note", {
+    method: "POST",
+    body: JSON.stringify({ noteId: noteId }),
+  }).then((_res) => {
+    window.location.href = "/";
+  });
+  }
+</script>
+{% endblock %} -->
+</body>
+</html>
