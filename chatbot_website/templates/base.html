@@ -41,14 +41,14 @@
   {% with messages = get_flashed_messages(with_categories=true) %} {% if
   messages %} {% for category, message in messages %} {% if category ==
   'error' %}
-  <div class="alert alert-danger alter-dismissable fade show" role="alert">
+  <div class="alert alert-danger alert-dismissable fade show mb-0" role="alert">
     {{ message }}
     <button type="button" class="close" data-dismiss="alert">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
   {% else %}
-  <div class="alert alert-success alter-dismissable fade show" role="alert">
+  <div class="alert alert-success alert-dismissable fade show mb-0" role="alert">
     {{ message }}
     <button type="button" class="close" data-dismiss="alert">
       <span aria-hidden="true">&times;</span>
@@ -60,6 +60,12 @@
 
   <script>
     $(document).ready(function () {
+
+      // Close alert on button click
+      $('.close').on('click', function () {
+        $(this).closest('.alert').fadeOut();
+      });
+
       function handleButtonClick(button) {
         const isLikeButton = button.hasClass('like_btn');
         const responseContainer = button.closest('.bot-frame');
