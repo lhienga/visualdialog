@@ -6,30 +6,50 @@ from PIL import Image
 import requests
 from sqlalchemy import update
 from sqlalchemy import schema, create_engine
-from transformers import InstructBlipProcessor, InstructBlipForConditionalGeneration, BartForConditionalGeneration, BartTokenizer
+from transformers import InstructBlipProcessor, InstructBlipForConditionalGeneration, BartForConditionalGeneration, BartTokenizer, InstructBlipConfig, AutoModelForVision2Seq
+import torch
 import torch 
 import time
+from accelerate import infer_auto_device_map, init_empty_weights
 
 db = SQLAlchemy()
 DB_NAME = "database_cb.db"
 
-model = InstructBlipForConditionalGeneration.from_pretrained("Salesforce/instructblip-vicuna-7b")
-processor = InstructBlipProcessor.from_pretrained("Salesforce/instructblip-vicuna-7b")
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-model.to(device)
-
-sum_model_name = "facebook/bart-large-cnn"
-sum_model = BartForConditionalGeneration.from_pretrained(sum_model_name)
-sum_tokenizer = BartTokenizer.from_pretrained(sum_model_name)
-
 def create_app():
-    
+    print("CREATING APPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
     app = Flask(__name__)
     # app.config['UPLOAD_FOLDER'] = "static/uploads"
     app.config['SECRET_KEY'] = 'hjshjhdjah kjshkjdhjs'
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     db.init_app(app)
+
+    # Load the model configuration.
+    config = InstructBlipConfig.from_pretrained("Salesforce/instructblip-vicuna-13b")
+
+    # Initialize the model with the given configuration.
+    with init_empty_weights():
+        model = AutoModelForVision2Seq.from_config(config)
+        model.tie_weights()
+
+    # Infer device map based on the available resources.
+    device_map = infer_auto_device_map(model, max_memory={0: "20GiB", 1: "20GiB", 2:"20GiB"},
+                                    no_split_module_classes=['InstructBlipEncoderLayer', 'InstructBlipQFormerLayer',
+                                                                'LlamaDecoderLayer'])
+    device_map['language_model.lm_head'] = device_map['language_projection'] = device_map[('language_model.model'
+                                                                                        '.embed_tokens')]
+
+    offload = "offload"
+    # Load the processor and model for image processing.
+    processor = InstructBlipProcessor.from_pretrained("Salesforce/instructblip-vicuna-13b", device_map="auto")
+    model = InstructBlipForConditionalGeneration.from_pretrained("Salesforce/instructblip-vicuna-13b",
+                                                                device_map=device_map,
+                                                                offload_folder=offload, offload_state_dict=True)
+
+    # Summarisation model
+    sum_model_name = "facebook/bart-large-cnn"
+    sum_model = BartForConditionalGeneration.from_pretrained(sum_model_name)
+    sum_tokenizer = BartTokenizer.from_pretrained(sum_model_name)
+
 
     from .views import views
     from .auth import auth
@@ -88,7 +108,7 @@ def create_app():
         start = time.time()
         bot_msg = get_Chat_response(input, img)
         end = time.time()
-        runtime = start - end
+        runtime = end-start
         print("run time", end - start)
         #feedback = request.form.get('feedback')
 
@@ -152,7 +172,7 @@ def create_app():
                 print("summairised ans", sum_text)
             else: 
                 sum_text = generated_text
-            history[-1].append(sum_text)
+            #history[-1].append(sum_text)
             torch.cuda.empty_cache()
             #response = model.generate({"image": image, "prompt": prompt})[0]
             # encode the new user input, add the eos_token and return a tensor in Pytorch
@@ -178,6 +198,7 @@ def create_app():
                                 user_msg=update.user_msg,
                                 bot_msg=update.bot_msg,
                                 feedback=feedback,
+                                runtime = update.runtime, 
                                 date = update.date,
                                 user_id=current_user.id)
                 db.session.delete(update)

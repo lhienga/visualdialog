@@ -11,7 +11,7 @@ class Chat(db.Model):
     user_msg = db.Column(db.String(10000))
     bot_msg = db.Column(db.String(10000))
     date = db.Column(db.DateTime(timezone=True), default=func.now())
-    runtime = db.Column(db.Float)
+    runtime = db.Column(db.Float())
     feedback = db.Column(db.String(10000))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
