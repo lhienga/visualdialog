@@ -10,6 +10,7 @@ class Chat(db.Model):
     img_url = db.Column(db.String(10000))
     user_msg = db.Column(db.String(10000))
     bot_msg = db.Column(db.String(10000))
+    sum_msg = db.Column(db.String(10000))
     date = db.Column(db.DateTime(timezone=True), default=func.now())
     runtime = db.Column(db.Float())
     feedback = db.Column(db.String(10000))

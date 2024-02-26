@@ -15,7 +15,7 @@ from accelerate import infer_auto_device_map, init_empty_weights
 db = SQLAlchemy()
 DB_NAME = "database_cb.db"
 
-def create_app():
+def create_app(args):
     print("CREATING APPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
     app = Flask(__name__)
     # app.config['UPLOAD_FOLDER'] = "static/uploads"
@@ -94,19 +94,24 @@ def create_app():
         print(user_msg)
 
 
-
-        if len(history)<3:
-            input = " ".join([h.user_msg + " " + h.bot_msg for h in history])
+        if args.len_history == 0:
+            input = user_msg
         else:
-            input = " ".join([h.user_msg + " " + h.bot_msg for h in history[-3:]])
-        
-        input = input + " " + user_msg
+            if len(history) < args.len_history:
+                input = " ".join([h.sum_msg for h in history])
+                #input = " ".join([h.user_msg + " " + h.sum_msg for h in history])
+            else:
+                input = " ".join([ h.sum_msg for h in history[-args.len_history:]])
+                #input = " ".join([h.user_msg + " " + h.sum_msg for h in history[-args.len_history:]])
+            
+            input = input + " " + user_msg
+        print("prompt: ", input)
 
         img = Image.open(requests.get(url, stream=True).raw).convert("RGB")
         print("opened img")
         #img = Image.fromarray(img).convert('RGB')
         start = time.time()
-        bot_msg = get_Chat_response(input, img)
+        bot_msg , sum_text = get_Chat_response(input, img)
         end = time.time()
         runtime = end-start
         print("run time", end - start)
@@ -116,6 +121,7 @@ def create_app():
                         img_url=url,
                         user_msg=user_msg,
                         bot_msg=bot_msg,
+                        sum_msg = sum_text,
                         runtime = runtime,
                         #feedback=feedback,
                         user_id=current_user.id)
@@ -147,7 +153,7 @@ def create_app():
         # Let's chat for 5 lines
         #for step in range(1000):
             #time.sleep(5)
-            global history
+         
             inputs = processor(images=img, text=text, return_tensors="pt").to(model.device)
             #print("inputs:", inputs)
             print("generating output.........")
@@ -166,11 +172,16 @@ def create_app():
             
         
             print("generated!!!!!!!!!!")
+            
             generated_text = processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
-            if len(generated_text)>100:
-                sum_text = summarize_text(sum_model, sum_tokenizer, generated_text)
-                print("summairised ans", sum_text)
-            else: 
+
+            if args.len_history > 1: 
+                if len(generated_text)>100:
+                    sum_text = summarize_text(sum_model, sum_tokenizer, generated_text)
+                    print("summairised ans", sum_text)
+                else: 
+                    sum_text = generated_text
+            else:
                 sum_text = generated_text
             #history[-1].append(sum_text)
             torch.cuda.empty_cache()
@@ -180,7 +191,7 @@ def create_app():
             
             
             # pretty print last ouput tokens from bot
-            return generated_text
+            return generated_text, sum_text
             #generated_text
 
     @app.route("/sendfeedback", methods=["GET", "POST"])
@@ -197,6 +208,7 @@ def create_app():
                                 img_url=update.img_url,
                                 user_msg=update.user_msg,
                                 bot_msg=update.bot_msg,
+                                sum_msg = update.sum_msg,
                                 feedback=feedback,
                                 runtime = update.runtime, 
                                 date = update.date,
