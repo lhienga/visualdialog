@@ -121,20 +121,13 @@ def create_app(args):
                         img_url=url,
                         user_msg=user_msg,
                         bot_msg=bot_msg,
+                        prompt = input, 
                         sum_msg = sum_text,
                         runtime = runtime,
                         #feedback=feedback,
                         user_id=current_user.id)
         db.session.add(new_chat) #adding the chat to the database 
         db.session.commit()
-        
-        new = {
-            "id": id,
-            "image_url": url,
-            "user_message": user_msg,
-            "bot_message": bot_msg,
-            "feedback": None
-        }
         #data = data.append(new, ignore_index = True)
         # data = pd.concat([data, pd.DataFrame([new])], ignore_index=True)
 
@@ -175,7 +168,7 @@ def create_app(args):
             
             generated_text = processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
 
-            if args.len_history > 1: 
+            if args.len_history > 0: 
                 if len(generated_text)>100:
                     sum_text = summarize_text(sum_model, sum_tokenizer, generated_text)
                     print("summairised ans", sum_text)
@@ -209,6 +202,7 @@ def create_app(args):
                                 user_msg=update.user_msg,
                                 bot_msg=update.bot_msg,
                                 sum_msg = update.sum_msg,
+                                prompt = update.prompt, 
                                 feedback=feedback,
                                 runtime = update.runtime, 
                                 date = update.date,
