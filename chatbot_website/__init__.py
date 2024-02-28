@@ -143,12 +143,7 @@ def create_app(args):
     
     def get_Chat_response(text, img):
 
-        # Let's chat for 5 lines
-        #for step in range(1000):
-            #time.sleep(5)
-         
             inputs = processor(images=img, text=text, return_tensors="pt").to(model.device)
-            #print("inputs:", inputs)
             print("generating output.........")
         
             outputs = model.generate(
@@ -162,7 +157,6 @@ def create_app(args):
                                         length_penalty=2.0,
                                         temperature=1,
                                     )
-            
         
             print("generated!!!!!!!!!!")
             
@@ -171,7 +165,7 @@ def create_app(args):
             if args.len_history > 0: 
                 if len(generated_text)>100:
                     sum_text = summarize_text(sum_model, sum_tokenizer, generated_text)
-                    print("summairised ans", sum_text)
+                    print("summarised ans", sum_text)
                 else: 
                     sum_text = generated_text
             else:
