@@ -162,7 +162,7 @@ def create_app(args):
             
             generated_text = processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
 
-            if args.len_history > 0: 
+            if args.len_history > 1: 
                 if len(generated_text)>100:
                     sum_text = summarize_text(sum_model, sum_tokenizer, generated_text)
                     print("summarised ans", sum_text)

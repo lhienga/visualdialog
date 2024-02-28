@@ -33,6 +33,6 @@ def export_sqlite_to_csv(database_file, table_name, csv_file):
 # Example usage
 database_file = 'instance/database_cb.db'
 table_name = 'chat'
-csv_file = 'output2_sum2.csv'
+csv_file = 'output1_2.csv'
 
 export_sqlite_to_csv(database_file, table_name, csv_file)
