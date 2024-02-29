@@ -8,6 +8,7 @@ print("MAIN CBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--len_history', type=int, default=3, help="combined prompt upper limit")
+parser.add_argument('--sum', type=int, default=1, help="summarise answer for prompt or not")
 
 args = parser.parse_args()
 
