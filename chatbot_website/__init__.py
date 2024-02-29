@@ -88,10 +88,13 @@ def create_app(args):
         #img = Image.fromarray(img).convert('RGB')
         print("url: ", url)
         with app.app_context():
-            history = Chat.query.filter_by(img_url = url, user_id = current_user.id, prompt_num = args.len_history, summarise = args.sum).all()
+            history = Chat.query.filter_by(img_url = url, 
+                                           user_id = current_user.id, 
+                                           prompt_num = args.len_history, 
+                                           summarise = args.sum,
+                                           feedback = 'like').all()
 
         print(user_msg)
-
 
         if args.len_history == 0:
             input = user_msg
