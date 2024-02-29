@@ -12,6 +12,8 @@ class Chat(db.Model):
     bot_msg = db.Column(db.String(10000))
     sum_msg = db.Column(db.String(10000))
     prompt = db.Column(db.String(10000))
+    prompt_num = db.Column(db.Integer)
+    summarise = db.Column(db.Integer)
     date = db.Column(db.DateTime(timezone=True), default=func.now())
     runtime = db.Column(db.Float())
     feedback = db.Column(db.String(10000))

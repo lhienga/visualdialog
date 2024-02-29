@@ -88,9 +88,8 @@ def create_app(args):
         #img = Image.fromarray(img).convert('RGB')
         print("url: ", url)
         with app.app_context():
-            history = Chat.query.filter_by(img_url = url, user_id = current_user.id).all()
+            history = Chat.query.filter_by(img_url = url, user_id = current_user.id, prompt_num = args.len_history, summarise = args.sum).all()
 
-        
         print(user_msg)
 
 
@@ -101,7 +100,7 @@ def create_app(args):
                 input = " ".join([h.sum_msg for h in history])
                 #input = " ".join([h.user_msg + " " + h.sum_msg for h in history])
             else:
-                input = " ".join([ h.sum_msg for h in history[-args.len_history:]])
+                input = " ".join([h.sum_msg for h in history[-args.len_history:]])
                 #input = " ".join([h.user_msg + " " + h.sum_msg for h in history[-args.len_history:]])
             
             input = input + " " + user_msg
@@ -122,6 +121,8 @@ def create_app(args):
                         user_msg=user_msg,
                         bot_msg=bot_msg,
                         prompt = input, 
+                        prompt_num =  args.len_history,
+                        summarise = args.sum, 
                         sum_msg = sum_text,
                         runtime = runtime,
                         #feedback=feedback,
@@ -162,7 +163,7 @@ def create_app(args):
             
             generated_text = processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
 
-            if args.len_history > 1: 
+            if args.sum == 1: 
                 if len(generated_text)>100:
                     sum_text = summarize_text(sum_model, sum_tokenizer, generated_text)
                     print("summarised ans", sum_text)
@@ -172,10 +173,6 @@ def create_app(args):
                 sum_text = generated_text
             #history[-1].append(sum_text)
             torch.cuda.empty_cache()
-            #response = model.generate({"image": image, "prompt": prompt})[0]
-            # encode the new user input, add the eos_token and return a tensor in Pytorch
-            #print(generated_text)
-            
             
             # pretty print last ouput tokens from bot
             return generated_text, sum_text
@@ -197,6 +194,8 @@ def create_app(args):
                                 bot_msg=update.bot_msg,
                                 sum_msg = update.sum_msg,
                                 prompt = update.prompt, 
+                                prompt_num = update.prompt_num, 
+                                summarise = update.summarise, 
                                 feedback=feedback,
                                 runtime = update.runtime, 
                                 date = update.date,
@@ -206,7 +205,7 @@ def create_app(args):
                 db.session.add(new_chat) #adding the chat to the database 
                 db.session.commit()
         # data.loc[int(id) - 1, 'feedback'] = feedback
-        print("hiasdsaf feedback", feedback)
+        print("feedback", feedback)
         return "feedback saved!"
     
     return app
